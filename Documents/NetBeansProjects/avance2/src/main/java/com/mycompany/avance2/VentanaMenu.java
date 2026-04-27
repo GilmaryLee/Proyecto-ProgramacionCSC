@@ -3,14 +3,14 @@ package com.mycompany.avance2;
 import javax.swing.*;
 public class VentanaMenu extends JFrame {
     
-    private Cuenta cuenta;
+    private int numeroCuenta;
 
-    public VentanaMenu(Cuenta cuenta){
+    public VentanaMenu(int numeroCuenta){
 
-        this.cuenta = cuenta;
+        this.numeroCuenta = numeroCuenta;
 
-        setTitle("Menu Cajero");
-        setSize(300,330);
+        setTitle("Menu");
+        setSize(300,400);
         setLayout(null);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
 
@@ -22,7 +22,7 @@ public class VentanaMenu extends JFrame {
         btnRetiro.setBounds(80,70,130,30);
         add(btnRetiro);
 
-        JButton btnSaldo = new JButton("Consultar saldo");
+        JButton btnSaldo = new JButton("Saldo");
         btnSaldo.setBounds(80,120,130,30);
         add(btnSaldo);
 
@@ -30,63 +30,102 @@ public class VentanaMenu extends JFrame {
         btnHistorial.setBounds(80,170,130,30);
         add(btnHistorial);
 
-        JButton btnSalir = new JButton("Salir");
-        btnSalir.setBounds(80,220,130,30);
-        add(btnSalir);
+        JButton btnTransferir = new JButton("Transferir");
+        btnTransferir.setBounds(80,220,130,30);
+        add(btnTransferir);
+
+        JButton btnLogout = new JButton("Cerrar sesión");
+        btnLogout.setBounds(80, 320, 130, 30);
+        add(btnLogout);
 
         btnDeposito.addActionListener(e -> {
+            try{
+                double monto = Double.parseDouble(
+                    JOptionPane.showInputDialog("Monto:")
+                );
 
-            String m = JOptionPane.showInputDialog("Monto a depositar");
+                ConexionCliente con = new ConexionCliente();
+                con.enviar("deposito", numeroCuenta, monto);
 
-            double monto = Double.parseDouble(m);
+                JOptionPane.showMessageDialog(null,"OK");
 
-            cuenta.depositar(monto);
-
-            JOptionPane.showMessageDialog(null,"Deposito realizado");
-
+            }catch(Exception ex){
+                JOptionPane.showMessageDialog(null,"Error");
+            }
         });
 
         btnRetiro.addActionListener(e -> {
-
             try{
+                double monto = Double.parseDouble(
+                    JOptionPane.showInputDialog("Monto:")
+                );
 
-                String m = JOptionPane.showInputDialog("Monto a retirar");
+                ConexionCliente con = new ConexionCliente();
+                String res = (String) con.enviar("retiro", numeroCuenta, monto);
 
-                double monto = Double.parseDouble(m);
-
-                cuenta.retirar(monto);
-
-                JOptionPane.showMessageDialog(null,"Retiro realizado");
+                JOptionPane.showMessageDialog(null,res);
 
             }catch(Exception ex){
-
-                JOptionPane.showMessageDialog(null,ex.getMessage());
-
+                JOptionPane.showMessageDialog(null,"Error");
             }
-
         });
 
         btnSaldo.addActionListener(e -> {
+            try{
+                ConexionCliente con = new ConexionCliente();
+                double saldo = (double) con.enviar("saldo", numeroCuenta);
 
-            JOptionPane.showMessageDialog(null,"Saldo: " + cuenta.getSaldo());
+                JOptionPane.showMessageDialog(null,"Saldo: ₡" + saldo);
 
+            }catch(Exception ex){
+                JOptionPane.showMessageDialog(null,"Error");
+            }
         });
 
         btnHistorial.addActionListener(e -> {
+            try{
+                ConexionCliente con = new ConexionCliente();
+                String hist = (String) con.enviar("historial", numeroCuenta);
 
-            JOptionPane.showMessageDialog(null,cuenta.mostrarHistorial());
+                JOptionPane.showMessageDialog(null,hist);
 
+            }catch(Exception ex){
+                JOptionPane.showMessageDialog(null,"Error");
+            }
         });
 
-        btnSalir.addActionListener(e -> {
+        btnTransferir.addActionListener(e -> {
+            try{
+                int destino = Integer.parseInt(
+                    JOptionPane.showInputDialog("Cuenta destino:")
+                );
 
-            JOptionPane.showMessageDialog(null,"Gracias por usar el cajero");
+                // Validacion de la tranferencia
+                if(destino == numeroCuenta){
+                    JOptionPane.showMessageDialog(null,"No puedes transferirte a ti mismo");
+                    return;
+                }
 
-            System.exit(0);
+                double monto = Double.parseDouble(
+                    JOptionPane.showInputDialog("Monto:")
+                );
 
+                ConexionCliente con = new ConexionCliente();
+                String res = (String) con.enviar("transferencia", numeroCuenta, destino, monto);
+
+                JOptionPane.showMessageDialog(null,res);
+
+            }catch(Exception ex){
+                JOptionPane.showMessageDialog(null,"Error");
+            }
+        });
+
+        // Cierra sesion
+        btnLogout.addActionListener(e -> {
+            new VentanaLogin();
+            dispose();
         });
 
         setVisible(true);
-
     }
 }
